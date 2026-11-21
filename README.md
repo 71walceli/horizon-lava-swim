@@ -20,7 +20,7 @@ which adds two commits on top of `0b14f8ac`:
    `MotionWorld::jump_phase` `pub`, so the replaceable copies compile in `horizon_patched_client_lib`.
 
 The upstream request for public hooks that would replace this patch is tracked in
-[horizon-rust/horizon: hooks for swimming and fluid travel in lava](https://github.com/horizon-rust/horizon/issues?q=is%3Aissue+can_swim_in_fluid).
+[horizon-rust/horizon#19459](https://github.com/horizon-rust/horizon/issues/19459).
 
 ## Layout
 
