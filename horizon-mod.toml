@@ -1,0 +1,69 @@
+id = "lava_swim"
+name = "Lava Swim"
+version = "1.2.1"
+description = "With Fire Resistance, swim in lava as in water: sprint swimming, faster acceleration, water's vertical drag and a sneak dive. Horizon port of Lava Swim 1.2.1 (Fabric)."
+authors = ["wceli"]
+api = "0.2"
+side = "both"
+capabilities = ["registries"]
+
+[native]
+game = "26.3"
+horizon = "0b14f8acfd97fa2c750e42795249dcc981178ca4"
+mixins = "e59da9094f0c2fdda6c627fe9eff22dec6a906f0"
+
+
+# Player.travel: an eligible player's lava branch (LivingEntityMixin on travelInLava).
+[[native.mixin]]
+id = "travel"
+target = "horizon_client_lib::motion::MotionWorld<'_,'_,'_>::player_travel"
+kind = "HEAD"
+cancellable = true
+helper = "src/mixins/travel.rs"
+bindings = [
+  { name = "world", ty = "&mut MotionWorld<'_, '_, '_>", value = "&mut *self" },
+  { name = "input", ty = "Vec3", value = "input" },
+]
+
+# Player.updateSwimming (PlayerEntityMixin), inside Entity.baseTick's fluid phase.
+[[native.mixin]]
+id = "swimming"
+target = "horizon_client_lib::motion::fluids::MotionWorld<'_,'_,'_>::fluid_base_tick"
+kind = "HEAD"
+cancellable = true
+helper = "src/mixins/swimming.rs"
+bindings = [{ name = "world", ty = "&mut MotionWorld<'_, '_, '_>", value = "&mut *self" }]
+
+# LocalPlayer.goDownInWater in lava (ClientPlayerEntityMixin, tickMovement): just before the local
+# player's dry tick, where vanilla's water dive has already run.
+[[native.mixin]]
+id = "dive"
+target = "horizon_client_lib::motion::MotionWorld<'_,'_,'_>::dry_tick"
+kind = "HEAD"
+helper = "src/mixins/dive.rs"
+bindings = [
+  { name = "world", ty = "&mut MotionWorld<'_, '_, '_>", value = "&mut *self" },
+  { name = "input", ty = "&TickInput", value = "&input" },
+]
+
+# shouldStopSwimSprinting and canSprint's water gates (ClientPlayerEntityMixin).
+[[native.mixin]]
+id = "sprint"
+target = "horizon_client_lib::motion::PlayerMotion::sprint_conditions"
+kind = "RETURN"
+helper = "src/mixins/sprint.rs"
+bindings = [
+  { name = "player", ty = "&PlayerMotion", value = "self" },
+  { name = "value", ty = "crate::sprint::Conditions", value = "$value" },
+]
+
+# shouldSlowDown's crawling check (ClientPlayerEntityMixin).
+[[native.mixin]]
+id = "slow"
+target = "horizon_client_lib::pose::PlayerMotion::moving_slowly"
+kind = "RETURN"
+helper = "src/mixins/slow.rs"
+bindings = [
+  { name = "player", ty = "&crate::motion::PlayerMotion", value = "self" },
+  { name = "value", ty = "bool", value = "$value" },
+]
